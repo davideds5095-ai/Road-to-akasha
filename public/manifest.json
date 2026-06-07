@@ -1,0 +1,25 @@
+{
+  "short_name": "Akasha",
+  "name": "Road to Akasha",
+  "description": "Il tuo compagno personale di benessere",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/ff6b35/ffffff?text=✦",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/ff6b35/ffffff?text=✦",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#ff6b35",
+  "background_color": "#0a0a0f",
+  "categories": ["health", "fitness", "lifestyle"]
+}
