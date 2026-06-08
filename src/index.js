@@ -1,12 +1,35 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
+import { useState } from "react";
+import Akasha from "./Akasha"; // se non esiste lo lasciamo come componente interno
+import Book from "./Book";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<React.StrictMode><App /></React.StrictMode>);
+export default function App() {
+  const [page, setPage] = useState("home");
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
+  return (
+    <div style={{ padding: 20 }}>
+      
+      {/* NAV BAR */}
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={() => setPage("home")}>Home</button>
+        <button onClick={() => setPage("akasha")}>Akasha</button>
+        <button onClick={() => setPage("book")}>Book</button>
+      </div>
+
+      {/* PAGES */}
+      {page === "home" && <Home setPage={setPage} />}
+      {page === "akasha" && <Akasha setPage={setPage} />}
+      {page === "book" && <Book />}
+      
+    </div>
+  );
+}
+
+function Home({ setPage }) {
+  return (
+    <div>
+      <h1>Home</h1>
+      <button onClick={() => setPage("akasha")}>Vai ad Akasha</button>
+      <button onClick={() => setPage("book")}>Book</button>
+    </div>
+  );
 }
