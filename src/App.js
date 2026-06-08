@@ -1058,3 +1058,207 @@ export default function App() {
     </div>
   );
 }
+import React, { useState, useEffect } from "react";
+import { View, Text, Pressable, ScrollView } from "react-native";
+
+/* ===================== STORAGE ===================== */
+const DB = {
+  get: (k) => {
+    try { return JSON.parse(globalThis.localStorage?.getItem(k)); }
+    catch { return null; }
+  },
+  set: (k, v) => {
+    try { globalThis.localStorage?.setItem(k, JSON.stringify(v)); }
+    catch {}
+  },
+  update: (k, v) => {
+    const old = DB.get(k) || {};
+    DB.set(k, { ...old, ...v });
+  }
+};
+
+/* ===================== THEME ===================== */
+const T = {
+  bg: "#0a0a0f",
+  card: "#1a1a24",
+  text: "#f0f0f5",
+  muted: "#888",
+  accent: "#ff6b35"
+};
+
+/* ===================== HEADER ===================== */
+function Header({ title, onBack }) {
+  return (
+    <View style={{
+      flexDirection: "row",
+      padding: 16,
+      backgroundColor: "#13131a",
+      alignItems: "center"
+    }}>
+      {onBack && (
+        <Pressable onPress={onBack}>
+          <Text style={{ color: T.accent, fontSize: 18 }}>←</Text>
+        </Pressable>
+      )}
+      <Text style={{ color: T.text, fontSize: 16, fontWeight: "800", marginLeft: 12 }}>
+        {title}
+      </Text>
+    </View>
+  );
+}
+
+/* ===================== OFFLINE AI ===================== */
+function offlineAI(msg, profile, checkins) {
+  const m = msg.toLowerCase();
+  const last = checkins?.slice(-1)[0];
+
+  if (m.includes("energia")) {
+    return `Energia media recente: ${last?.energia || 5}/10. Consiglio: camminata 20 min + idratazione + luce naturale.`;
+  }
+
+  if (m.includes("sonno")) {
+    return `Per dormire meglio: niente schermi 45 min prima + tisana rilassante + luce bassa.`;
+  }
+
+  if (m.includes("cibo")) {
+    return `Alimentazione recente: ${last?.alimentazione || "non registrata"}. Evita zuccheri la sera.`;
+  }
+
+  return `Sono Akasha. Posso aiutarti su energia, sonno, alimentazione e stress.`;
+}
+
+/* ===================== IA SCREEN ===================== */
+function IAScreen({ profile, checkins, setScreen }) {
+  const [input, setInput] = useState("");
+  const [chat, setChat] = useState([
+    { role: "ai", text: "Ciao, sono Akasha. Come stai oggi?" }
+  ]);
+
+  const send = () => {
+    const user = { role: "user", text: input };
+    const ai = { role: "ai", text: offlineAI(input, profile, checkins) };
+
+    setChat([...chat, user, ai]);
+    setInput("");
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: T.bg }}>
+      <Header title="Akasha IA" onBack={() => setScreen("home")} />
+
+      <ScrollView style={{ flex: 1, padding: 12 }}>
+        {chat.map((m, i) => (
+          <View key={i} style={{
+            alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+            backgroundColor: T.card,
+            padding: 10,
+            marginVertical: 4,
+            borderRadius: 10
+          }}>
+            <Text style={{ color: T.text }}>{m.text}</Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={{ flexDirection: "row", padding: 10 }}>
+        <Pressable onPress={send} style={{
+          backgroundColor: T.accent,
+          padding: 10,
+          borderRadius: 8
+        }}>
+          <Text style={{ color: "#fff" }}>Invia</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+/* ===================== HOME ===================== */
+function Home({ setScreen }) {
+  return (
+    <View style={{ flex: 1, backgroundColor: T.bg }}>
+      <Header title="Akasha" />
+
+      <Pressable onPress={() => setScreen("ia")} style={{ padding: 20 }}>
+        <Text style={{ color: T.text }}>→ Vai ad Akasha IA</Text>
+      </Pressable>
+
+      <Pressable onPress={() => setScreen("checkin")} style={{ padding: 20 }}>
+        <Text style={{ color: T.text }}>→ Check-in</Text>
+      </Pressable>
+
+      <Pressable onPress={() => setScreen("book")} style={{ padding: 20 }}>
+        <Text style={{ color: T.text }}>→ Book</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+/* ===================== CHECKIN ===================== */
+function Checkin({ setScreen, setCheckins }) {
+  const today = new Date().toISOString().split("T")[0];
+
+  const save = () => {
+    const data = DB.get("checkins") || [];
+    const newData = [...data, {
+      date: today,
+      energia: 6,
+      sonno: 7,
+      alimentazione: "normale"
+    }];
+
+    DB.set("checkins", newData);
+    setCheckins(newData);
+    setScreen("home");
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: T.bg }}>
+      <Header title="Check-in" onBack={() => setScreen("home")} />
+
+      <Pressable onPress={save} style={{ padding: 20 }}>
+        <Text style={{ color: T.text }}>Salva check-in (demo)</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+/* ===================== BOOK ===================== */
+function Book({ checkins, setScreen }) {
+  const last = checkins?.slice(-1)[0];
+
+  return (
+    <View style={{ flex: 1, backgroundColor: T.bg }}>
+      <Header title="Book Akasha" onBack={() => setScreen("home")} />
+
+      <View style={{ padding: 20 }}>
+        <Text style={{ color: T.text }}>
+          Energia: {last?.energia || "?"}
+        </Text>
+
+        <Text style={{ color: T.text, marginTop: 10 }}>
+          Alimentazione: {last?.alimentazione || "?"}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+/* ===================== APP ===================== */
+export default function App() {
+  const [screen, setScreen] = useState("home");
+  const [checkins, setCheckins] = useState(DB.get("checkins") || []);
+
+  const screens = {
+    home: <Home setScreen={setScreen} />,
+    ia: <IAScreen setScreen={setScreen} checkins={checkins} />,
+    checkin: <Checkin setScreen={setScreen} setCheckins={setCheckins} />,
+    book: <Book setScreen={setScreen} checkins={checkins} />
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {screens[screen]}
+    </View>
+  );
+}
