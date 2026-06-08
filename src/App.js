@@ -488,7 +488,7 @@ function CheckinScreen({ profile, onSave }) {
   );
 }
 
-function IAScreen({ profile, checkins }) {
+function IAScreen({ia: <IAScreen profile={profile} checkins={checkins} navigate={navigate} />, }) {
   const [messages, setMessages] = useState(() => DB.get("chat_history") || [
     { role: "assistant", content: `Ciao ${profile?.name || "Viaggiatore"}! Sono Akasha, la tua guida nel viaggio verso il benessere. Ho già analizzato i tuoi ${checkins.length} giorni di dati. Come posso aiutarti oggi?` }
   ]);
@@ -532,7 +532,33 @@ function IAScreen({ profile, checkins }) {
   const suggestions = ["Cosa mi consiglia per avere più energia?", "Quale tisana mi fa bene oggi?", "Suggeriscimi una frequenza", "Come posso dormire meglio?"];
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Nunito', sans-serif", background: T.bg }}>
+    <div{/* BACK BUTTON HEADER */}
+<div style={{
+  padding: "12px",
+  background: T.surface,
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  borderBottom: `1px solid ${T.border}`
+}}>
+  <button
+    onClick={() => navigate("home")}
+    style={{
+      background: "transparent",
+      border: "1px solid " + T.border,
+      color: T.text,
+      padding: "6px 10px",
+      borderRadius: 8,
+      cursor: "pointer"
+    }}
+  >
+    ← Indietro
+  </button>
+
+  <div style={{ color: T.text, fontWeight: 700 }}>
+    Akasha IA
+  </div>
+</div> style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Nunito', sans-serif", background: T.bg }}>
       {/* Header */}
       <div style={{ padding: "50px 20px 16px", background: T.surface, borderBottom: `1px solid ${T.border}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -844,7 +870,11 @@ function CalendarioScreen({ profile }) {
   );
 }
 
-function BookScreen({ profile, checkins }) {
+function BookScreen({ profile, checkins useEffect(() => {
+  if (active === "book") {
+    setBook(DB.get("book"));
+  }
+}, [active]); }) {
   const [book, setBook] = useState(() => DB.get("book") || null);
   const [loading, setLoading] = useState(false);
 
